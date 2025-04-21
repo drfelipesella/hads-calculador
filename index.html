@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Escala HADS - Ansiedade e Depressão</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+    }
+    h2 {
+      color: #004080;
+    }
+    .question {
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+    }
+    .option {
+      margin-left: 15px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+    }
+    .resultado {
+      margin-top: 30px;
+      padding: 15px;
+      border: 1px solid #ccc;
+      background-color: #f2f2f2;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Escala HADS - Avaliação de Ansiedade e Depressão</h2>
+
+  <form id="hadsForm">
+    <div id="perguntas"></div>
+    <button type="button" onclick="calcularHADS()">Calcular Resultado</button>
+  </form>
+
+  <div class="resultado" id="resultado" style="display:none;"></div>
+
+  <script>
+    const perguntas = [
+      // Formato: [texto da pergunta, grupo, array de opções: [texto, valor]]
+      ["1. Eu me sinto tensa(o) ou contraída(o):", "ansiedade", [
+        ["a maior parte do tempo", 3],
+        ["boa parte do tempo", 2],
+        ["de vez em quando", 1],
+        ["nunca", 0]
+      ]],
+      ["2. Eu ainda sinto que gosto das mesmas coisas de antes:", "depressao", [
+        ["sim, do mesmo jeito que antes", 0],
+        ["não tanto quanto antes", 1],
+        ["só um pouco", 2],
+        ["já não consigo ter prazer em nada", 3]
+      ]],
+      ["3. Eu sinto uma espécie de medo, como se algo ruim fosse acontecer:", "ansiedade", [
+        ["sim, de jeito muito forte", 3],
+        ["sim, mas não tão forte", 2],
+        ["um pouco, mas isso não me preocupa", 1],
+        ["não sinto nada disso", 0]
+      ]],
+      ["4. Dou risada e me divirto com coisas engraçadas:", "depressao", [
+        ["do mesmo jeito que antes", 0],
+        ["atualmente um pouco menos", 1],
+        ["atualmente bem menos", 2],
+        ["não consigo mais", 3]
+      ]],
+      ["5. Estou com a cabeça cheia de preocupações:", "ansiedade", [
+        ["a maior parte do tempo", 3],
+        ["boa parte do tempo", 2],
+        ["de vez em quando", 1],
+        ["raramente", 0]
+      ]],
+      ["6. Eu me sinto alegre:", "depressao", [
+        ["a maior parte do tempo", 0],
+        ["muitas vezes", 1],
+        ["poucas vezes", 2],
+        ["nunca", 3]
+      ]],
+      ["7. Consigo me sentir relaxado(a):", "ansiedade", [
+        ["sim, quase sempre", 0],
+        ["muitas vezes", 1],
+        ["poucas vezes", 2],
+        ["nunca", 3]
+      ]],
+      ["8. Estou lento(a) para pensar ou fazer coisas:", "depressao", [
+        ["nunca", 0],
+        ["poucas vezes", 1],
+        ["muitas vezes", 2],
+        ["quase sempre", 3]
+      ]],
+      ["9. Tenho sensação ruim de medo (frio na barriga):", "ansiedade", [
+        ["nunca", 0],
+        ["de vez em quando", 1],
+        ["muitas vezes", 2],
+        ["quase sempre", 3]
+      ]],
+      ["10. Perdi o interesse em cuidar da aparência:", "depressao", [
+        ["me cuido do mesmo jeito que antes", 0],
+        ["talvez não tanto quanto antes", 1],
+        ["não estou mais me cuidando como eu deveria", 2],
+        ["completamente", 3]
+      ]],
+      ["11. Sinto-me inquieto(a), como se não pudesse ficar parado:", "ansiedade", [
+        ["não me sinto assim", 0],
+        ["um pouco", 1],
+        ["bastante", 2],
+        ["sim, demais", 3]
+      ]],
+      ["12. Fico animado(a) esperando coisas boas:", "depressao", [
+        ["do mesmo jeito que antes", 0],
+        ["um pouco menos que antes", 1],
+        ["bem menos do que antes", 2],
+        ["quase nunca", 3]
+      ]],
+      ["13. Tenho sensação súbita de pânico:", "ansiedade", [
+        ["não senti isso", 0],
+        ["de vez em quando", 1],
+        ["várias vezes", 2],
+        ["a quase todo momento", 3]
+      ]],
+      ["14. Sinto prazer com programas de TV ou leitura:", "depressao", [
+        ["quase sempre", 0],
+        ["várias vezes", 1],
+        ["poucas vezes", 2],
+        ["quase nunca", 3]
+      ]]
+    ];
+
+    function criarFormulario() {
+      const container = document.getElementById('perguntas');
+
+      perguntas.forEach((pergunta, index) => {
+        const div = document.createElement('div');
+        div.className = 'question';
+
+        const label = document.createElement('label');
+        label.innerText = pergunta[0];
+        div.appendChild(label);
+
+        pergunta[2].forEach((opcao, i) => {
+          const radio = document.createElement('input');
+          radio.type = 'radio';
+          radio.name = `q${index}`;
+          radio.value = opcao[1];
+          div.appendChild(radio);
+
+          const txt = document.createTextNode(` ${opcao[0]}`);
+          const line = document.createElement('div');
+          line.className = 'option';
+          line.appendChild(radio);
+          line.appendChild(txt);
+          div.appendChild(line);
+        });
+
+        container.appendChild(div);
+      });
+    }
+
+    function calcularHADS() {
+      let ansiedade = 0;
+      let depressao = 0;
+      let respondidas = 0;
+
+      perguntas.forEach((pergunta, index) => {
+        const opcoes = document.getElementsByName(`q${index}`);
+        for (let opc of opcoes) {
+          if (opc.checked) {
+            respondidas++;
+            if (pergunta[1] === "ansiedade") {
+              ansiedade += parseInt(opc.value);
+            } else {
+              depressao += parseInt(opc.value);
+            }
+          }
+        }
+      });
+
+      if (respondidas < 14) {
+        alert("Por favor, responda todas as perguntas.");
+        return;
+      }
+
+      const resultado = document.getElementById("resultado");
+
+      const interpretacao = (pontos) => {
+        if (pontos <= 7) return "Improvável";
+        if (pontos <= 11) return "Possível (limítrofe)";
+        return "Provável";
+      };
+
+      resultado.innerHTML = `
+        <h3>Resultado:</h3>
+        <p><strong>Ansiedade:</strong> ${ansiedade} pontos – <em>${interpretacao(ansiedade)}</em></p>
+        <p><strong>Depressão:</strong> ${depressao} pontos – <em>${interpretacao(depressao)}</em></p>
+      `;
+      resultado.style.display = "block";
+    }
+
+    window.onload = criarFormulario;
+  </script>
+
+</body>
+</html>
